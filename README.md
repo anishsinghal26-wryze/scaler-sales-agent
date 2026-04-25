@@ -12,15 +12,15 @@ A two-part AI agent that supercharges Scaler BDAs at the two highest-dropout mom
 
 ## One failure I found
 
-**Input:** Karthik Iyer (9 YoE, Google, IIT Madras) with his transcript.
+**Input:** Karthik Iyer (Google, 9 YoE) with transcript.
 
-**What went wrong:** The PDF addressed his three stated questions correctly but still opened with generic Scaler credibility framing — alumni outcomes, program structure — before getting to what he actually asked: *what can I learn here that Google's internal training doesn't cover?* For a senior engineer at a top company, leading with social proof is the wrong frame. The PDF should have opened by acknowledging his skepticism directly and earning credibility through specificity, not volume. The agent optimises for completeness over tone-matching, and for a high-signal skeptic that's the wrong tradeoff.
+The PDF answered his questions but opened with generic credibility framing — alumni outcomes, program structure — before his actual ask: what can I learn that Google's internal training doesn't cover? Senior skeptics need specificity first, not social proof. Agent optimises completeness over tone.
 
 ---
 
 ## Scale plan
 
-The first thing to break at 100,000 leads per month is **Claude API throughput combined with Vercel's serverless cold-start pattern.** Each lead generation makes two sequential Claude calls (nudge + PDF content), each taking 5–15 seconds. At peak hours when hundreds of BDAs dial simultaneously, concurrent requests will hit Anthropic's rate limits and Vercel's function timeout ceiling. The fix is a job queue (Redis + BullMQ) that accepts the generation request immediately, processes it async, and pushes a webhook to the UI when ready — decoupling the BDA's wait time from actual LLM latency. Second constraint: Vercel Blob storage accumulates indefinitely. At ~100KB per PDF, 100k leads/month is 10GB/month; a nightly TTL cleanup job or S3 lifecycle policy is needed before costs compound.
+At 100,000 leads per month, the first thing to break is Claude API throughput combined with Vercel's serverless cold-start pattern. Each lead makes two sequential Claude calls taking 5–15 seconds each. At peak hours, concurrent BDA requests will hit Anthropic's rate limits and Vercel's timeout ceiling. Fix: a job queue (Redis + BullMQ) that accepts immediately, processes async, and notifies the UI when ready. Second: Vercel Blob accumulates indefinitely — at ~100KB per PDF, 100k leads/month is 10GB. A nightly TTL cleanup or S3 lifecycle policy is needed before costs compound.
 
 ---
 
